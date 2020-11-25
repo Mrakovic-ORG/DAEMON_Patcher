@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30711.63
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DEAMON_Patcher", "DEAMON_Patcher\DEAMON_Patcher.csproj", "{23095BEC-92E7-450A-9908-9AE466F5C8D9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{23095BEC-92E7-450A-9908-9AE466F5C8D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23095BEC-92E7-450A-9908-9AE466F5C8D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23095BEC-92E7-450A-9908-9AE466F5C8D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23095BEC-92E7-450A-9908-9AE466F5C8D9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A6CAB9B4-6E7D-43D9-AE45-2AFC72A9ECC5}
+	EndGlobalSection
+EndGlobal
