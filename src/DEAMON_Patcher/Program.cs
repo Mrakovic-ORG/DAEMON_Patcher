@@ -2,10 +2,10 @@
 using System.IO;
 using System.Linq;
 using dnlib.DotNet;
-using dnlib.DotNet.Emit;
 using dnlib.DotNet.Writer;
+using OpCodes = dnlib.DotNet.Emit.OpCodes;
 
-namespace DAEMON_Patcher
+namespace DEAMON_Patcher
 {
     internal static class Program
     {
@@ -23,7 +23,7 @@ namespace DAEMON_Patcher
         private static void SetupInstruction(string message = null)
         {
             Console.Clear();
-            
+
             // In case there is an message display it. (it is supposed to be an issue message)
             if (message != null) Console.WriteLine($"{message}\nTry again.\n");
 
@@ -78,24 +78,93 @@ namespace DAEMON_Patcher
 
             // Loop true all the methods
             foreach (var type in module.GetTypes())
-            foreach (var method in type.Methods)
-                // There is the same method name on few other classes but only those who uses a param name of featureGuid,
-                // are used to activate or not a feature by the feature guid
-                if (method.Name == "IsFeatureActivated" && !method.IsStatic && method.ParamDefs.Count > 0 &&
-                    method.ParamDefs.All(parameter => parameter.Name.String == "featureGuid"))
+            {
+                // Loop true methods
+                foreach (var method in type.Methods)
                 {
-                    Console.WriteLine($"Patching: {method.FullName}");
-                    var methodInstr = method.Body.Instructions;
+                    // Unlock features
+                    // There is the same method name on few other classes but only those who uses a param name of "state" are used to activate or not a feature by the feature guid
+                    if ((method.Name == "IsFeatureActivated" || method.Name == "FeatureCanBeTrial") &&
+                        method.IsStatic &&
+                        method.ParamDefs.Count > 0 &&
+                        method.ParamDefs.All(parameter => parameter.Name.String == "state"))
+                    {
+                        Console.WriteLine($"Patching: {method.FullName}");
+                        var methodInstr = method.Body.Instructions;
 
-                    /*
-                     * Clear actual OpCodes and Add return true
-                     * ldc.i4.1
-                     * ret
-                     */
-                    methodInstr.Clear();
-                    methodInstr.Add(OpCodes.Ldc_I4_1.ToInstruction());
-                    methodInstr.Add(OpCodes.Ret.ToInstruction());
+                        /*
+                         * Clear all instructions and insert return true
+                         * ldc.i4.1
+                         * ret
+                         */
+                        methodInstr.Clear();
+                        methodInstr.Add(OpCodes.Ldc_I4_1.ToInstruction());
+                        methodInstr.Add(OpCodes.Ret.ToInstruction());
+                    }
+
+                    // Change default license type to paid
+                    if (method.Name == "get_CurLicenseType")
+                    {
+                        Console.WriteLine($"Patching: {method.FullName}");
+                        var methodInstr = method.Body.Instructions;
+
+                        /*
+                         * Clear all instructions and insert return (UInt32)3
+                         * ldc.i4.3
+                         * ret
+                         */
+                        methodInstr.Clear();
+                        methodInstr.Add(OpCodes.Ldc_I4_3.ToInstruction());
+                        methodInstr.Add(OpCodes.Ret.ToInstruction());
+                    }
+
+                    // Change default license text
+                    if (method.Name == "get_LicenseText")
+                    {
+                        Console.WriteLine($"Patching: {method.FullName}");
+                        var methodInstr = method.Body.Instructions;
+
+                        /*
+                         * Clear all instructions and insert return (string)"Mrakovic-ORG"
+                         * ldstr "Mrakovic-ORG"
+                         * ret
+                         */
+                        methodInstr.Clear();
+                        methodInstr.Add(OpCodes.Ldstr.ToInstruction("Mrakovic-ORG"));
+                        methodInstr.Add(OpCodes.Ret.ToInstruction());
+                    }
+
+                    // Hide hardware id
+                    if (method.Name == "get_HardWareID" || method.Name == "get_HardWareIDText")
+                    {
+                        Console.WriteLine($"Removing: {method.FullName}");
+                        var methodInstr = method.Body.Instructions;
+
+                        /*
+                         * Clear all instructions and insert return (string)""
+                         * ldstr ""
+                         * ret
+                         */
+                        methodInstr.Clear();
+                        methodInstr.Add(OpCodes.Ldstr.ToInstruction(""));
+                        methodInstr.Add(OpCodes.Ret.ToInstruction());
+                    }
+
+                    // Remove Google Analytics spyware
+                    if (method.Name == "SendMessage" && method.ParamDefs.Count >= 2)
+                    {
+                        Console.WriteLine($"Removing: {method.FullName}");
+                        var methodInstr = method.Body.Instructions;
+
+                        /*
+                         * Clear all instructions
+                         * ret
+                         */
+                        methodInstr.Clear();
+                        methodInstr.Add(OpCodes.Ret.ToInstruction());
+                    }
                 }
+            }
 
             // Finally save the module
             SaveModule(module, outputModulePath);
@@ -135,7 +204,7 @@ namespace DAEMON_Patcher
             // Patch the app
             PatchApp(file2PatchBak, file2Patch);
         }
-        
+
         private static void AutomaticPatchApp()
         {
             var file2Patch = $"{SupposedDaemonDirectory}\\DotNetCommon.dll";
@@ -156,7 +225,7 @@ namespace DAEMON_Patcher
             {
                 SetupInstruction("Could not make a backup, try to run the application with an higher privilege.");
             }
-            
+
             // Patch the app
             PatchApp(file2PatchBak, file2Patch);
         }

@@ -4,6 +4,7 @@
 ## Features
 - Automatically detect directory
 - Automatically patch file
+- Removes Google Analytics spyware
 
 ## Build
 ```SH
